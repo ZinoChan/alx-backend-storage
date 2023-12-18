@@ -10,7 +10,9 @@ def print_stats(mongo_collection):
         print stats abt nginx
     """
     total_logs = mongo_collection.count_documents({})
+    print(f"{total_logs} logs")
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print("Methods:")
     for method in methods:
         count = mongo_collection.count_documents({"method": method})
         print(f"    method {method}: {count}")

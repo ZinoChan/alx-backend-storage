@@ -18,7 +18,7 @@ def print_stats(mongo_collection):
         print(f"    method {method}: {count}")
 
     status_check_count = mongo_collection.count_documents(
-        {"method": "GET", "path": "/status"})
+        {"path": "/status"})
     print(f"{status_check_count} status check")
 
 

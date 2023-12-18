@@ -15,15 +15,15 @@ def print_stats(mongo_collection):
     print("Methods:")
     for method in methods:
         count = mongo_collection.count_documents({"method": method})
-        print(f"    method {method}: {count}")
+        print(f"\tmethod {method}: {count}")
 
     status_check_count = mongo_collection.count_documents(
-        {"path": "/status"})
+        {"method": "GET", "path": "/status"})
     print(f"{status_check_count} status check")
 
 
 if __name__ == "__main__":
-    client = MongoClient()
+    client = MongoClient('mongodb://127.0.0.1:27017')
     db = client.logs
     collection = db.nginx
     print_stats(collection)

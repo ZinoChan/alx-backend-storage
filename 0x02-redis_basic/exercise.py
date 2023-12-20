@@ -8,14 +8,15 @@ from functools import wraps
 
 
 def count_calls(method: Callable) -> Callable:
-    '''count how many times methods of Cache class are called'''
+    """count how many times methods of Cache class are called"""
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        '''wrap the decorated'''
+        """wrap the decorated"""
         key = method.__qualname__
         self._redis.incr(key)
         return method(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -34,7 +35,9 @@ class Cache:
         self._redis.set(randKey, data)
         return randKey
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, float, bytes, int]:
+    def get(
+        self, key: str, fn: Optional[Callable] = None
+    ) -> Union[str, float, bytes, int]:
         value = self._redis.get(key)
         if value:
             value = fn(value)
@@ -42,7 +45,7 @@ class Cache:
 
     def get_str(self, key: str):
         """Get data as str"""
-        return self.get(key, fn=lambda x: x.decode('utf-8'))
+        return self.get(key, fn=lambda x: x.decode("utf-8"))
 
     def get_int(self, key: str):
         return self.get(key, fn=int)

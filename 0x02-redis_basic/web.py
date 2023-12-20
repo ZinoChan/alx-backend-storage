@@ -4,29 +4,38 @@
 Implementing an expiring web cache and tracker.
 """
 
-import redis
 import requests
+import redis
+from functools import wraps
 
-redis_connection = redis.Redis()
-initial_count = 0
+cache_store = redis.Redis()
 
 
+def track_url_access(method):
+    """count the times a url is aaceed"""
+
+    @wraps(method)
+    def decorated_function(url):
+        cached_key = f"cached:{url}"
+        cached_data = cache_store.get(cached_key)
+
+        if cached_data:
+            return cached_data.decode("utf-8")
+
+        count_key = f"count:{url}"
+        html = method(url)
+
+        cache_store.incr(count_key)
+        cache_store.set(cached_key, html)
+        cache_store.expire(cached_key, 10)
+
+        return html
+
+    return decorated_function
+
+
+@track_url_access
 def get_page(url: str) -> str:
-    """
-    Track how many times a particular
-    URL was accessed
-    """
-    count_key = f"count:{url}"
-    cache_key = f"cached:{url}"
-
-    redis_connection.set(cache_key, initial_count)
+    """Returns HTML content of a URL"""
     response = requests.get(url)
-    redis_connection.incr(count_key)
-    redis_connection.setex(cache_key, 10, redis_connection.get(cache_key))
-
     return response.text
-
-
-if __name__ == "__main__":
-    url_to_fetch = 'http://slowwly.robertomurray.co.uk'
-    get_page(url_to_fetch)

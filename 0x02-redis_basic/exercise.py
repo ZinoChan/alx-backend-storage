@@ -25,7 +25,7 @@ class Cache:
 
     def __init__(self):
         """init Redis client and flush db"""
-        self._redis = redis.Redis()
+        self._redis = redis.Redis(host='localhost', port=6379, db=0)
         self._redis.flushdb()
 
     @count_calls

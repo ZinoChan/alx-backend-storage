@@ -40,21 +40,16 @@ def replay(redis_instance: redis.Redis, method: Callable) -> List[str]:
     """Replay history"""
     method_name = method.__qualname__
 
-    input_key = f'{method_name}:inputs'
-    output_key = f'{method_name}:outputs'
+    input_key = method_name + ":inputs"
+    output_key = method_name + ":outputs"
 
     input_history = redis_instance.lrange(input_key, 0, -1)
     output_history = redis_instance.lrange(output_key, 0, -1)
 
-    history = []
-    for i, (input_data, output_data) in enumerate(zip(input_history, output_history)):
-        history.append({
-            'Call Number': i + 1,
-            'Input': input_data.decode('utf-8'),
-            'Output': output_data.decode('utf-8')
-        })
-
-    return history
+    print(f"{method_name} was called {len(input_history)} times:")
+    for input_data, output_data in zip(input_history, output_history):
+        print(
+            f"{method_name}(*{input_data.decode('utf-8')}) -> {output_data.decode('utf-8')}")
 
 
 class Cache:

@@ -4,6 +4,19 @@
 import redis
 import uuid
 from typing import Union, Callable, Optional
+from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    '''count how many times methods of Cache class are called'''
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        '''wrap the decorated'''
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -14,6 +27,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flashdb()
 
+    @count_calls
     def store(self, data: Union[str, float, bytes, int]) -> str:
         """set data in redis"""
         randKey = str(uuid.uuid4())

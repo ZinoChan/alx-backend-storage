@@ -60,32 +60,39 @@ def replay(redis_instance: redis.Redis, method: Callable) -> List[str]:
 
 
 class Cache:
-    """declare cache class"""
+    """ class """
 
     def __init__(self):
-        """init Redis client and flush db"""
+        """ init redis """
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    @count_calls
     @call_history
-    def store(self, data: Union[str, float, bytes, int]) -> str:
-        """set data in redis"""
-        randKey = str(uuid.uuid4())
-        self._redis.set(randKey, data)
-        return randKey
+    @count_calls
+    def store(self, data: Union[str, bytes, int, float]) -> str:
+        """ generate a random key to store data """
+        key = str(uuid.uuid4())
+        self._redis.set(key, data)
+        return key
 
-    def get(
-        self, key: str, fn: Optional[Callable] = None
-    ) -> Union[str, float, bytes, int]:
+    def get(self, key: str,
+            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+        """ convert data using cb """
+        data = self._redis.get(key)
+        if fn:
+            return fn(data)
+        return data
+
+    def get_str(self, key: str) -> str:
+        """ automatically parametrize Cache.get to str """
+        data = self._redis.get(key)
+        return data.decode("utf-8")
+
+    def get_int(self, key: str) -> int:
+        """ automatically parametrize Cache.get to int """
         value = self._redis.get(key)
-        if value:
-            value = fn(value)
+        try:
+            value = int(value.decode("utf-8"))
+        except Exception:
+            value = 0
         return value
-
-    def get_str(self, key: str):
-        """Get data as str"""
-        return self.get(key, fn=lambda x: x.decode("utf-8"))
-
-    def get_int(self, key: str):
-        return self.get(key, fn=int)

@@ -26,7 +26,7 @@ class Cache:
     def __init__(self):
         """init Redis client and flush db"""
         self._redis = redis.Redis()
-        self._redis.flashdb()
+        self._redis.flushdb()
 
     @count_calls
     def store(self, data: Union[str, float, bytes, int]) -> str:
